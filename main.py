@@ -45,10 +45,11 @@ csv_thread = threading.Thread(target=csv_loop, daemon=True)
 # Sets up the GUI
 root = tk.Tk()
 gui = SensorGUI(root)
-gui_thread = threading.Thread(target=gui_loop, args=(gui,), daemon=True)
+# gui_thread = threading.Thread(target=gui_loop, args=(gui,), daemon=True)
 
 # Start the threads
 sensor_thread.start()
 csv_thread.start()
-gui_thread.start()
+# gui_thread.start()
+gui_loop(gui)
 root.mainloop()
