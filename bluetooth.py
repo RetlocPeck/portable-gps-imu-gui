@@ -4,31 +4,39 @@ from config import IS_WINDOWS
 if not IS_WINDOWS:
     import bluetooth
 
-# This function streams data over Bluetooth using RFCOMM.
-# It creates a Bluetooth socket, binds it to any available port,
-# and listens for incoming connections. Once a client connects,
-# it sends data to the client every second until an error occurs.
-# The connection is then closed gracefully.
-def bluetooth_stream(data):
+# Stream sensor data over Bluetooth using RFCOMM and PyBluez
+def bluetooth_stream(data_queue):
     if IS_WINDOWS:
         print("[Bluetooth] Skipped — Windows mock mode.")
         return
 
-    server_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-    server_sock.bind(("", bluetooth.PORT_ANY))
-    server_sock.listen(1)
-    print("[Bluetooth] Waiting for connection...")
-
-    client_sock, _ = server_sock.accept()
-    print("[Bluetooth] Client connected.")
-
     try:
+        server_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        server_sock.bind(("", bluetooth.PORT_ANY))
+        server_sock.listen(1)
+
+        port = server_sock.getsockname()[1]
+        print(f"[Bluetooth] Waiting for connection on RFCOMM channel {port}...")
+
+        client_sock, client_info = server_sock.accept()
+        print(f"[Bluetooth] Accepted connection from {client_info}")
+
         while True:
-            client_sock.send(f"{data}\n")
-            time.sleep(1)
+            if not data_queue.empty():
+                data = data_queue.get()
+                msg = (
+                    f"Lat: {data['lat']}, Lon: {data['lon']}, Alt: {data['altitude']}, "
+                    f"Accel: {data['accel']}, Gyro: {data['gyro']}, Mag: {data['mag']}, "
+                    f"Timestamp: {data['timestamp']}\n"
+                )
+                client_sock.send(msg.encode('utf-8'))
+                time.sleep(1)
+
     except Exception as e:
         print(f"[Bluetooth] Error: {e}")
     finally:
-        client_sock.close()
-        server_sock.close()
+        if 'client_sock' in locals():
+            client_sock.close()
+        if 'server_sock' in locals():
+            server_sock.close()
         print("[Bluetooth] Connection closed.")
