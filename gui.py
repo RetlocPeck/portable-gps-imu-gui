@@ -18,10 +18,13 @@ class SensorGUI:
     # Updates the label with the latest sensor data.
     # It formats the data into a readable string and sets it as the label's text.
     def update(self, data):
+        if data["lat"] == 0.0 and data["lon"] == 0.0:
+            gps_status = "GPS: acquiring fix..."
+        else:
+            gps_status = f"Lat: {data['lat']}\nLon: {data['lon']}\nAlt: {data['altitude']}"
+
         text = (
-            f"Lat: {data['lat']}\n"
-            f"Lon: {data['lon']}\n"
-            f"Alt: {data['altitude']}\n"
+            f"{gps_status}\n"
             f"Accel: {data['accel']}\n"
             f"Gyro: {data['gyro']}\n"
             f"Magnetometer: {data['mag']}\n"

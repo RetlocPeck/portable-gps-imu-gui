@@ -1,25 +1,27 @@
 import time
+import socket
+import os
 from config import IS_WINDOWS
 
-if not IS_WINDOWS:
-    import bluetooth
+# Bluetooth RFCOMM UUID (standard Serial Port Profile)
+BT_UUID = "00001101-0000-1000-8000-00805F9B34FB"
 
-# Stream sensor data over Bluetooth using RFCOMM and PyBluez
 def bluetooth_stream(data_queue):
     if IS_WINDOWS:
         print("[Bluetooth] Skipped — Windows mock mode.")
         return
 
+    # Create native Bluetooth RFCOMM socket
+    server_sock = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+
     try:
-        server_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        server_sock.bind(("", bluetooth.PORT_ANY))
+        server_sock.bind(("", 1))  # Bind to channel 1
         server_sock.listen(1)
 
-        port = server_sock.getsockname()[1]
-        print(f"[Bluetooth] Waiting for connection on RFCOMM channel {port}...")
+        print("[Bluetooth] Waiting for connection on channel 1...")
 
         client_sock, client_info = server_sock.accept()
-        print(f"[Bluetooth] Accepted connection from {client_info}")
+        print(f"[Bluetooth] Connected to {client_info}")
 
         while True:
             if not data_queue.empty():
@@ -35,8 +37,6 @@ def bluetooth_stream(data_queue):
     except Exception as e:
         print(f"[Bluetooth] Error: {e}")
     finally:
-        if 'client_sock' in locals():
-            client_sock.close()
-        if 'server_sock' in locals():
-            server_sock.close()
+        client_sock.close()
+        server_sock.close()
         print("[Bluetooth] Connection closed.")

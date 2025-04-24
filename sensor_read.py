@@ -39,11 +39,23 @@ def get_sensor_data():
         }
     else:
         gps.update()
+
+        # Fallback while GPS is still acquiring fix
+        if gps.latitude is None or gps.longitude is None:
+            print("[Sensor] Waiting for GPS fix...")
+            gps_lat = 0.0
+            gps_lon = 0.0
+            gps_alt = 0.0
+        else:
+            gps_lat = gps.latitude
+            gps_lon = gps.longitude
+            gps_alt = gps.altitude_m
+
         return {
             "timestamp": time.time(),
-            "lat": gps.latitude,
-            "lon": gps.longitude,
-            "altitude": gps.altitude_m,
+            "lat": gps_lat,
+            "lon": gps_lon,
+            "altitude": gps_alt,
             "mag": imu.magnetic,
             "accel": imu.acceleration,
             "gyro": imu.gyro,
