@@ -3,24 +3,23 @@ from config import IS_WINDOWS
 
 if not IS_WINDOWS:
     import serial
+    import adafruit_gps
+    import adafruit_bno055
     import board
     import busio
-    import adafruit_icm20x
-    import adafruit_gps
 
     # Setup UART for GPS
-    uart = serial.Serial("/dev/serial0", baudrate=9600, timeout=1)
-    gps = adafruit_gps.GPS(uart, debug=False)
-    gps.send_command(b'PMTK220,1000')  # 1 Hz
+    gps_uart = serial.Serial("/dev/serial0", baudrate=9600, timeout=1)
+    gps = adafruit_gps.GPS(gps_uart, debug=False)
+    gps.send_command(b'PMTK220,1000')  # 1 Hz update rate
     gps.send_command(b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
 
-    # Setup I2C for IMU
-    i2c = busio.I2C(board.SCL, board.SDA)
-    imu = adafruit_icm20x.ICM20948(i2c)
+    # Setup UART for BNO055 (on ttyAMA2)
+    imu_uart = serial.Serial("/dev/ttyAMA2", baudrate=115200, timeout=1)
+    imu = adafruit_bno055.BNO055_UART(imu_uart)
 
 def get_sensor_data():
     if IS_WINDOWS:
-        # Return mock data for testing
         return {
             "timestamp": time.time(),
             "lat": 35.123456,
@@ -31,7 +30,6 @@ def get_sensor_data():
             "gyro": (0.001, 0.002, 0.003),
         }
     else:
-        # Update GPS and IMU data
         gps.update()
         return {
             "timestamp": time.time(),

@@ -8,6 +8,6 @@ tk
 # Only used on Raspberry Pi (won't be installed on Windows)
 pyserial ; sys_platform != 'win32'
 adafruit-circuitpython-gps ; sys_platform != 'win32'
-adafruit-circuitpython-icm20x ; sys_platform != 'win32'
+adafruit-circuitpython-bno055 ; sys_platform != 'win32'
 adafruit-circuitpython-busdevice ; sys_platform != 'win32'
 adafruit-blinka ; sys_platform != 'win32'
