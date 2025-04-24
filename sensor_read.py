@@ -4,9 +4,10 @@ from config import IS_WINDOWS
 if not IS_WINDOWS:
     import serial
     import adafruit_gps
-    import adafruit_bno055
     import board
     import busio
+    import digitalio
+    import adafruit_lsm9ds1
 
     # Setup UART for GPS
     gps_uart = serial.Serial("/dev/serial0", baudrate=9600, timeout=1)
@@ -14,9 +15,16 @@ if not IS_WINDOWS:
     gps.send_command(b'PMTK220,1000')  # 1 Hz update rate
     gps.send_command(b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
 
-    # Setup UART for BNO055 (on ttyAMA2)
-    imu_uart = serial.Serial("/dev/ttyAMA2", baudrate=115200, timeout=1)
-    imu = adafruit_bno055.BNO055_UART(imu_uart)
+    # Setup SPI for LSM9DS1
+    spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+
+    cs_ag = digitalio.DigitalInOut(board.D8)  # Chip select for accelerometer/gyro
+    cs_m = digitalio.DigitalInOut(board.D7)   # Chip select for magnetometer
+
+    cs_ag.direction = digitalio.Direction.OUTPUT
+    cs_m.direction = digitalio.Direction.OUTPUT
+
+    imu = adafruit_lsm9ds1.LSM9DS1_SPI(spi, cs_ag, cs_m)
 
 def get_sensor_data():
     if IS_WINDOWS:
