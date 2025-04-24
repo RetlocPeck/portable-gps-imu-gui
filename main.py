@@ -1,6 +1,7 @@
 import threading
 import queue
 import time
+import os
 import tkinter as tk
 from sensor_read import get_sensor_data
 from bluetooth import bluetooth_stream
@@ -52,11 +53,18 @@ def main():
     csv_thread.start()
 
     if not IS_WINDOWS:
-        usb_thread = threading.Thread(target=usb_loop, daemon=True)
-        bluetooth_thread = threading.Thread(target=lambda: bluetooth_stream(data_queue), daemon=True)
+        if os.path.exists("/dev/ttyUSB0"):
+            print("[Main] USB device found. Starting USB stream...")
+            usb_thread = threading.Thread(target=usb_loop, daemon=True)
+            usb_thread.start()
+        else:
+            print("[Main] No USB device connected. Skipping USB stream.")
 
-        usb_thread.start()
-        bluetooth_thread.start()
+        try:
+            bluetooth_thread = threading.Thread(target=lambda: bluetooth_stream(data_queue), daemon=True)
+            bluetooth_thread.start()
+        except Exception as e:
+            print(f"[Main] Skipping Bluetooth: {e}")
 
     root = tk.Tk()
     gui = SensorGUI(root)

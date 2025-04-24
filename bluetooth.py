@@ -37,6 +37,12 @@ def bluetooth_stream(data_queue):
     except Exception as e:
         print(f"[Bluetooth] Error: {e}")
     finally:
-        client_sock.close()
-        server_sock.close()
+        try:
+            if 'client_sock' in locals():
+                client_sock.close()
+            if 'server_sock' in locals():
+                server_sock.close()
+        except Exception as close_err:
+            print("[Bluetooth] Close error:", close_err)
+
         print("[Bluetooth] Connection closed.")

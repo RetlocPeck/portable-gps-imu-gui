@@ -18,8 +18,8 @@ if not IS_WINDOWS:
     # Setup SPI for LSM9DS1
     spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 
-    cs_ag = digitalio.DigitalInOut(board.D8)  # Chip select for accelerometer/gyro
-    cs_m = digitalio.DigitalInOut(board.D7)   # Chip select for magnetometer
+    cs_ag = digitalio.DigitalInOut(board.D5)  # Chip select for accelerometer/gyro
+    cs_m = digitalio.DigitalInOut(board.D6)   # Chip select for magnetometer
 
     cs_ag.direction = digitalio.Direction.OUTPUT
     cs_m.direction = digitalio.Direction.OUTPUT
